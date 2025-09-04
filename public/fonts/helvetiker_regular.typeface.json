@@ -1,0 +1,28 @@
+{
+  "glyphs": {
+    "A": {
+      "ha": 722,
+      "x_min": 15,
+      "x_max": 706,
+      "o": "m 15 0 l 305 714 l 415 714 l 706 0 l 606 0 l 537 183 l 183 183 l 115 0 l 15 0 z m 216 280 l 504 280 l 360 616 l 216 280 z"
+    }
+  },
+  "familyName": "Helvetiker",
+  "ascender": 718,
+  "descender": -207,
+  "underlinePosition": -100,
+  "underlineThickness": 50,
+  "boundingBox": {
+    "yMin": -207,
+    "yMax": 718,
+    "xMin": -166,
+    "xMax": 1166
+  },
+  "resolution": 1000,
+  "original_font_information": {
+    "format": 0,
+    "copyright": "Copyright (c) 2009 by . All rights reserved.",
+    "fontFamily": "Helvetiker",
+    "fontSubfamily": "Regular"
+  }
+}
