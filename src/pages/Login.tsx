@@ -34,14 +34,14 @@ const Login = () => {
       } else {
         toast({
           title: "Sign in failed",
-          description: "Please check your credentials and try again.",
+          description: "Invalid credentials. Please check your email and password.",
           variant: "destructive",
         })
       }
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Something went wrong. Please try again.",
+        description: error?.message || "Something went wrong. Please try again.",
         variant: "destructive",
       })
     } finally {

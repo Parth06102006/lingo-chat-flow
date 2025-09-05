@@ -10,7 +10,7 @@ import { motion } from 'framer-motion'
 import { FileText, ArrowLeft } from 'lucide-react'
 
 const Signup = () => {
-  const [name, setName] = useState('')
+  const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -24,7 +24,7 @@ const Signup = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (password !== confirmPassword) {
       toast({
         title: "Password mismatch",
@@ -37,7 +37,8 @@ const Signup = () => {
     setIsLoading(true)
 
     try {
-      const success = await signup(email, password, name)
+      // Pass arguments in correct order: name, email, password
+      const success = await signup(username, email, password)
       if (success) {
         toast({
           title: "Account created!",
@@ -50,10 +51,10 @@ const Signup = () => {
           variant: "destructive",
         })
       }
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Something went wrong. Please try again.",
+        description: error?.message || "Something went wrong. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -89,20 +90,19 @@ const Signup = () => {
           </CardHeader>
           
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">          
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="username">Username</Label>
                 <Input
-                  id="name"
+                  id="username"
                   type="text"
-                  placeholder="Enter your full name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Enter your username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   required
                   disabled={isLoading}
                 />
               </div>
-              
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -145,7 +145,7 @@ const Signup = () => {
               <Button
                 type="submit"
                 className="w-full hero-gradient"
-                disabled={isLoading || !name || !email || !password || !confirmPassword}
+                disabled={isLoading || !username || !email || !password || !confirmPassword}
               >
                 {isLoading ? 'Creating account...' : 'Create Account'}
               </Button>

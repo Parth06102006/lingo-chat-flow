@@ -1,4 +1,3 @@
-import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Environment } from '@react-three/drei'
 import { Suspense } from 'react'
 import { Button } from '@/components/ui/button'
@@ -44,16 +43,6 @@ const Home = () => {
     <div className="min-h-screen bg-gradient-surface">
       {/* Hero Section with 3D Background */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        {/* 3D Canvas Background */}
-        <div className="absolute inset-0 z-0">
-          <Canvas camera={{ position: [0, 0, 10], fov: 60 }}>
-            <Suspense fallback={null}>
-              <FloatingDocs />
-              <OrbitControls enableZoom={false} enablePan={false} />
-              <Environment preset="city" />
-            </Suspense>
-          </Canvas>
-        </div>
 
         {/* Hero Content */}
         <div className="relative z-10 text-center max-w-4xl mx-auto px-6">
