@@ -422,7 +422,7 @@ export default function Dashboard() {
   const [isTranslating, setIsTranslating] = useState(false)
   const [currentTranslationPage, setCurrentTranslationPage] = useState(1)
   
-  const backendUrl = 'http://localhost:8000'
+  const backendUrl = `${import.meta.env.VITE_BACKEND_URL}`
 
   const toast = ({ title, description }: { title: string; description: string }) =>
     console.log(`${title}: ${description}`)
