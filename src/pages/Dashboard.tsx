@@ -132,7 +132,7 @@ function ChatInterface({
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [loadingHistory, setLoadingHistory] = useState(false)
-  const backendUrl = `${import.meta.env.VITE_BACKEND_URL}`
+  const backendUrl = 'https://multilingual-file.onrender.com'
 
   // Load session history when session changes
   useEffect(() => {
@@ -422,7 +422,7 @@ export default function Dashboard() {
   const [isTranslating, setIsTranslating] = useState(false)
   const [currentTranslationPage, setCurrentTranslationPage] = useState(1)
   
-  const backendUrl = `${import.meta.env.VITE_BACKEND_URL}`
+  const backendUrl = 'https://multilingual-file.onrender.com'
 
   const toast = ({ title, description }: { title: string; description: string }) =>
     console.log(`${title}: ${description}`)
