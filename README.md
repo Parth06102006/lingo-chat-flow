@@ -1,73 +1,41 @@
-# Welcome to your Lovable project
+# LingoDocs – Multilingual PDF Conversational AI Assistant
 
-## Project info
+A simple AI-powered platform to upload multilingual PDFs, ask questions, and get answers with source references.
 
-**URL**: https://lovable.dev/projects/21161f1c-b38a-4afe-8176-afb42279f58a
+## What it does
 
-## How can I edit this code?
+- Upload PDFs (max 100 pages) and preview them
+- Create chat sessions with titles
+- Ask questions using text or voice input
+- Get AI-powered answers that reference specific PDF pages
+- Translate non-English PDF pages to English
+- Click source references to jump to exact pages in PDF viewer
 
-There are several ways of editing your application.
+## Tech Stack
 
-**Use Lovable**
+- **Frontend:** React, Tailwind CSS, Framer Motion
+- **Backend:** Node.js, Express
+- **Database:** MongoDB
+- **File Storage:** Supabase (PDF bucket storage)
+- **AI:** Google Gemini API
+- **PDF Processing:** react-pdf-viewer
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/21161f1c-b38a-4afe-8176-afb42279f58a) and start prompting.
+## Setup
 
-Changes made via Lovable will be committed automatically to this repo.
+1. Clone repo
+2. Install dependencies: `npm install`
+3. Set environment variables (MongoDB, Gemini API key, Supabase)
+4. Run frontend: `npm run dev`
+5. Run backend: `npm start`
 
-**Use your preferred IDE**
+## Features
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- Dashboard for managing PDFs and sessions
+- Voice-to-text question input
+- Source-linked answers that scroll to PDF pages
+- Inline page translation
+- Session management with mandatory titles
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+Built using Gemini API for AI responses, MongoDB for data storage, and Supabase for PDF file storage.
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/21161f1c-b38a-4afe-8176-afb42279f58a) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Visit the Website [LingoDocs](https://lingo-chat-flow.vercel.app)
