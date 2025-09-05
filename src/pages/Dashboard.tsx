@@ -132,7 +132,7 @@ function ChatInterface({
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [loadingHistory, setLoadingHistory] = useState(false)
-  const backendUrl = 'http://localhost:8000'
+  const backendUrl = `${import.meta.env.VITE_BACKEND_URL}`
 
   // Load session history when session changes
   useEffect(() => {
