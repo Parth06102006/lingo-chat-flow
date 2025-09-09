@@ -1,41 +1,83 @@
-# LingoDocs – Multilingual PDF Conversational AI Assistant
+# lingo-chat-flow
 
-A simple AI-powered platform to upload multilingual PDFs, ask questions, and get answers with source references.
+[![GitHub stars](https://img.shields.io/github/stars/Parth06102006/lingo-chat-flow)](https://github.com/Parth06102006/lingo-chat-flow/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/Parth06102006/lingo-chat-flow)](https://github.com/Parth06102006/lingo-chat-flow/network)
+[![GitHub issues](https://img.shields.io/github/issues/Parth06102006/lingo-chat-flow)](https://github.com/Parth06102006/lingo-chat-flow/issues)
+[![GitHub license](https://img.shields.io/github/license/Parth06102006/lingo-chat-flow)](https://github.com/Parth06102006/lingo-chat-flow)
+[![GitHub last commit](https://img.shields.io/github/last-commit/Parth06102006/lingo-chat-flow)](https://github.com/Parth06102006/lingo-chat-flow/commits/main)
 
-## What it does
+Lingo Chat Flow is a real-time chat application designed for seamless and intuitive communication. This project facilitates dynamic conversations with a clean user interface.
 
-- Upload PDFs (max 100 pages) and preview them
-- Create chat sessions with titles
-- Ask questions using text or voice input
-- Get AI-powered answers that reference specific PDF pages
-- Translate non-English PDF pages to English
-- Click source references to jump to exact pages in PDF viewer
+**Live Demo:** [lingo-chat-flow.vercel.app](https://lingo-chat-flow.vercel.app)
 
-## Tech Stack
+## ✨ Features
 
-- **Frontend:** React, Tailwind CSS, Framer Motion
-- **Backend:** Node.js, Express
-- **Database:** MongoDB
-- **File Storage:** Supabase (PDF bucket storage)
-- **AI:** Google Gemini API
-- **PDF Processing:** react-pdf-viewer
+*   Real-time messaging
+*   User authentication
+*   Modern and responsive UI
+*   Chat history
+*   Secure data handling
 
-## Setup
+## 🚀 Getting Started
 
-1. Clone repo
-2. Install dependencies: `npm install`
-3. Set environment variables (MongoDB, Gemini API key, Supabase)
-4. Run frontend: `npm run dev`
-5. Run backend: `npm start`
+Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
 
-## Features
+### Prerequisites
 
-- Dashboard for managing PDFs and sessions
-- Voice-to-text question input
-- Source-linked answers that scroll to PDF pages
-- Inline page translation
-- Session management with mandatory titles
+You need to have Node.js and npm (or yarn) installed on your system.
 
-Built using Gemini API for AI responses, MongoDB for data storage, and Supabase for PDF file storage.
+*   [Node.js](https://nodejs.org/)
+*   [npm](https://www.npmjs.com/get-npm)
 
-Visit the Website [LingoDocs](https://lingo-chat-flow.vercel.app)
+### Installation
+
+1.  **Clone the repository:**
+    ```sh
+    git clone https://github.com/Parth06102006/lingo-chat-flow.git
+    ```
+
+2.  **Navigate to the project directory:**
+    ```sh
+    cd lingo-chat-flow
+    ```
+
+3.  **Install dependencies:**
+    ```sh
+    npm install
+    ```
+
+4.  **Create a `.env` file** in the root directory and add the necessary environment variables.
+
+5.  **Start the development server:**
+    ```sh
+    npm run dev
+    ```
+
+## 📖 Usage
+
+After installation, the application will be running on your local server, typically `http://localhost:3000`. Open this URL in your browser to use the application. You can register a new account or log in with an existing one to start chatting.
+
+## 🛠️ Built With
+
+*   [TypeScript](https://www.typescriptlang.org/)
+
+## 🤝 Contributing
+
+Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+1.  **Fork** the Project
+2.  Create your Feature **Branch** (`git checkout -b feature/AmazingFeature`)
+3.  **Commit** your Changes (`git commit -m 'Add some AmazingFeature'`)
+4.  Push to the Branch (`git push origin feature/AmazingFeature`)
+5.  Open a **Pull Request**
+
+## 📜 License
+
+Not specified.
+
+## 👤 Contact
+
+**Parth06102006**
+
+*   **GitHub:** [@Parth06102006](https://github.com/Parth06102006)
+*   **Project Link:** [https://github.com/Parth06102006/lingo-chat-flow](https://github.com/Parth06102006/lingo-chat-flow)
