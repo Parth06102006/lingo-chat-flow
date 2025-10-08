@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useToast } from '@/hooks/use-toast'
 import { 
   Upload, 
   FileText, 
@@ -235,13 +236,13 @@ function ChatInterface({
         sources: aData.data.sources || [],
       }
       setMessages(prev => [...prev, newAssistantMessage])
-    } catch (err: any) {
+  } catch (err: unknown) {
       setMessages(prev => [
         ...prev,
         {
           id: (Date.now() + 2).toString(),
           type: 'assistant',
-          content: `⚠️ Error: ${err.message}`,
+        content: `⚠️ Error: ${err instanceof Error ? err.message : 'Request failed'}`,
           timestamp: new Date(),
         },
       ])
@@ -424,18 +425,19 @@ export default function Dashboard() {
   
   const backendUrl = 'https://multilingual-file.onrender.com'
 
-  const toast = ({ title, description }: { title: string; description: string }) =>
-    console.log(`${title}: ${description}`)
+  const { toast } = useToast()
 
   // Load selected PDFs from memory on component mount
   useEffect(() => {
-    const saved = (window as any).selectedPDFIds || []
+    const globalWindow = window as unknown as { selectedPDFIds?: string[] }
+    const saved = globalWindow.selectedPDFIds || []
     setSelectedPDFIds(saved)
   }, [])
 
   // Save selected PDFs to memory whenever they change
   useEffect(() => {
-    (window as any).selectedPDFIds = selectedPDFIds
+    const globalWindow = window as unknown as { selectedPDFIds?: string[] }
+    globalWindow.selectedPDFIds = selectedPDFIds
   }, [selectedPDFIds])
 
   // Function to extract text from PDF using PDF.js (would need to be implemented with pdf-parse or similar)
@@ -513,8 +515,9 @@ export default function Dashboard() {
       
       if (googleData && googleData[0] && googleData[0][0] && googleData[0][0][0]) {
         let translatedText = ''
-        googleData[0].forEach((item: any[]) => {
-          if (item[0]) translatedText += item[0]
+        googleData[0].forEach((item: unknown) => {
+          const tuple = item as unknown[]
+          if (tuple && tuple[0] && typeof tuple[0] === 'string') translatedText += tuple[0] as string
         })
         return translatedText
       } else {
@@ -628,12 +631,12 @@ export default function Dashboard() {
         description: `Page ${currentPage} translated to English` 
       })
       
-    } catch (error: any) {
+  } catch (error: unknown) {
       console.error('Translation error:', error)
-      setTranslatedText(`Error: ${error.message || 'Failed to translate page content'}`)
+    setTranslatedText(`Error: ${error instanceof Error ? error.message : 'Failed to translate page content'}`)
       toast({ 
         title: 'Translation failed', 
-        description: error.message || 'Could not translate the page' 
+      description: error instanceof Error ? error.message : 'Could not translate the page' 
       })
     } finally {
       setIsTranslating(false)
@@ -645,9 +648,13 @@ export default function Dashboard() {
     try {
       const res = await fetch(`${backendUrl}/api/v1/pdf/list`, { credentials: 'include' })
       const data = await res.json()
-      if (res.ok && data.success) setPDFs(data.data || [])
+      if (res.ok && data.success) {
+        setPDFs(data.data || [])
+      } else {
+        toast({ title: 'Failed to fetch PDFs', description: data?.message || 'Try again later', variant: 'destructive' })
+      }
     } catch (err) {
-      console.error('Error fetching PDFs:', err)
+      toast({ title: 'Network error', description: 'Could not load PDFs', variant: 'destructive' })
     }
   }
 
@@ -658,15 +665,18 @@ export default function Dashboard() {
       const data = await res.json()
       if (res.ok && data.success) {
         setSessions(data.data || [])
+      } else {
+        toast({ title: 'Failed to fetch sessions', description: data?.message || 'Try again later', variant: 'destructive' })
       }
     } catch (err) {
-      console.error('Error fetching sessions:', err)
+      toast({ title: 'Network error', description: 'Could not load sessions', variant: 'destructive' })
     }
   }
 
   useEffect(() => {
     fetchPDFs()
     fetchSessions()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -688,10 +698,9 @@ export default function Dashboard() {
       if (res.ok && data.success) {
         toast({ title: 'Upload successful', description: 'PDF uploaded.' })
         fetchPDFs()
-      } else toast({ title: 'Upload failed', description: data.message || 'Error' })
+      } else toast({ title: 'Upload failed', description: data?.message || 'Error', variant: 'destructive' })
     } catch (err) {
-      console.error('Upload error:', err)
-      toast({ title: 'Upload error', description: 'Something went wrong.' })
+      toast({ title: 'Upload error', description: 'Something went wrong.', variant: 'destructive' })
     }
     e.target.value = ''
   }
@@ -702,13 +711,16 @@ export default function Dashboard() {
         method: 'DELETE',
         credentials: 'include',
       })
-      if (res.ok) {
+      const data = await res.json()
+      if (res.ok && data.success) {
         toast({ title: 'PDF deleted', description: 'Document removed.' })
         setSelectedPDFIds(prev => prev.filter(id => id !== pdfId))
         fetchPDFs()
+      } else {
+        toast({ title: 'Delete failed', description: data?.message || 'Could not delete PDF', variant: 'destructive' })
       }
     } catch (err) {
-      console.error('Delete PDF error:', err)
+      toast({ title: 'Network error', description: 'Delete request failed', variant: 'destructive' })
     }
   }
 
@@ -737,10 +749,9 @@ export default function Dashboard() {
         fetchSessions()
         setActiveSession(data.data)
         setActiveTab('chat')
-      } else toast({ title: 'Session creation failed', description: data.message || 'Error' })
+      } else toast({ title: 'Session creation failed', description: data?.message || 'Error', variant: 'destructive' })
     } catch (err) {
-      console.error('Create session error:', err)
-      toast({ title: 'Error', description: 'Failed to create session.' })
+      toast({ title: 'Network error', description: 'Failed to create session.', variant: 'destructive' })
     }
   }
 
@@ -750,15 +761,18 @@ export default function Dashboard() {
         method: 'DELETE',
         credentials: 'include',
       })
-      if (res.ok) {
+      const data = await res.json()
+      if (res.ok && data.success) {
         toast({ title: 'Session deleted', description: 'Conversation removed.' })
         fetchSessions()
         if (activeSession?.sessionId === sessionId) {
           setActiveSession(null)
         }
+      } else {
+        toast({ title: 'Delete failed', description: data?.message || 'Could not delete session', variant: 'destructive' })
       }
     } catch (err) {
-      console.error('Delete session error:', err)
+      toast({ title: 'Network error', description: 'Delete request failed', variant: 'destructive' })
     }
   }
 
