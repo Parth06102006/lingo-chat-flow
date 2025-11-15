@@ -1,20 +1,10 @@
+'use client'
+
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useToast } from '@/hooks/use-toast'
-import { 
-  Upload, 
-  FileText, 
-  MessageCircle, 
-  Calendar,
-  Eye,
-  Trash2,
-  Plus,
-  Languages,
-  Check,
-  X,
-  CircleCheck,
-  Circle,
-  Power
-} from 'lucide-react'
+import { useAuth } from '@/components/auth/AuthContext'
+import { Upload, FileText, MessageCircle, Calendar, Eye, Trash2, Plus, Languages, Check, X, CircleCheck, Circle, Power, User, LogOut } from 'lucide-react'
 
 interface PDFType {
   _id: string
@@ -24,6 +14,10 @@ interface PDFType {
   filePath: string
   sessionId: string
   createdAt: string
+  text?: Array<{
+    pageNumber: number
+    content: string
+  }>
 }
 
 interface SessionType {
@@ -68,47 +62,48 @@ function TranslationModal({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
-      <div className="bg-white rounded-lg w-4/5 h-4/5 max-w-4xl flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b">
-          <div>
-            <h2 className="text-lg font-semibold">English Translation</h2>
-            <p className="text-sm text-gray-600">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-0 sm:p-4">
+      <div className="bg-white rounded-none sm:rounded-2xl w-full h-full sm:w-4/5 sm:h-4/5 max-w-4xl flex flex-col shadow-2xl">
+        <div className="flex items-center justify-between p-3 sm:p-4 border-b border-blue-100 bg-gradient-to-r from-blue-50 to-purple-50">
+          <div className="flex-1 min-w-0 pr-2">
+            <h2 className="text-base sm:text-lg font-semibold text-slate-900">English Translation</h2>
+            <p className="text-xs sm:text-sm text-slate-600 truncate">
               {fileName} - Page {currentPage}
             </p>
           </div>
           <button 
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 p-1 rounded hover:bg-gray-100"
+            className="text-gray-400 hover:text-gray-600 p-1 rounded hover:bg-gray-100 transition-colors flex-shrink-0"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
-        <div className="flex-1 overflow-auto p-6">
+        <div className="flex-1 overflow-auto p-4 sm:p-6 bg-gradient-to-br from-blue-50/50 to-purple-50/30">
           {isLoading ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-                <p className="text-gray-600">Translating page content...</p>
+                <p className="text-slate-600">Translating page content...</p>
               </div>
             </div>
           ) : translatedText ? (
             <div className="prose max-w-none">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                <p className="text-blue-800 text-sm font-medium">
-                  ✓ Translation completed using Google Translate API
+              <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-4">
+                <p className="text-green-800 text-sm font-medium flex items-center gap-2">
+                  <Check className="h-4 w-4" />
+                  Translation completed using Google Translate API
                 </p>
               </div>
-              <div className="bg-white border rounded-lg p-6 shadow-sm">
-                <pre className="whitespace-pre-wrap font-sans text-gray-800 leading-relaxed">
+              <div className="bg-white border border-blue-100 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-md">
+                <pre className="whitespace-pre-wrap font-sans text-sm sm:text-base text-slate-700 leading-relaxed">
                   {translatedText}
                 </pre>
               </div>
             </div>
           ) : (
             <div className="text-center py-12">
-              <Languages className="h-16 w-16 text-gray-300 mx-auto mb-4"/>
-              <p className="text-gray-600">No translation available</p>
+              <Languages className="h-16 w-16 text-blue-200 mx-auto mb-4"/>
+              <p className="text-slate-500">No translation available</p>
             </div>
           )}
         </div>
@@ -133,9 +128,9 @@ function ChatInterface({
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [loadingHistory, setLoadingHistory] = useState(false)
-  const backendUrl = 'https://multilingual-file.onrender.com'
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-  // Load session history when session changes
+
   useEffect(() => {
     if (session) {
       loadSessionHistory(session.sessionId)
@@ -198,7 +193,6 @@ function ChatInterface({
     setLoading(true)
 
     try {
-      // Create Question
       const qRes = await fetch(`${backendUrl}/api/v1/chat/question`, {
         method: 'POST',
         credentials: 'include',
@@ -213,7 +207,6 @@ function ChatInterface({
       if (!qRes.ok || !qData.success) throw new Error(qData.message || 'Question failed')
       const questionId = qData.data._id
 
-      // Fetch Answer with selected PDFs
       const aRes = await fetch(`${backendUrl}/api/v1/chat/answer`, {
         method: 'POST',
         credentials: 'include',
@@ -253,29 +246,29 @@ function ChatInterface({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header with End Session Button */}
-      <div className="p-3 border-b bg-gray-50 flex justify-between items-center">
-        <div>
-          <div className="font-medium text-sm">{session?.title}</div>
+      <div className="p-3 sm:p-4 border-b border-blue-100 bg-gradient-to-r from-blue-50 to-purple-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
+        <div className="flex-1 min-w-0">
+          <div className="font-semibold text-sm sm:text-base text-slate-900 truncate">{session?.title}</div>
           {selectedPDFIds.length > 0 && (
-            <div className="text-xs text-blue-600 mt-1">
+            <div className="text-xs text-blue-600 mt-1 font-medium">
               {selectedPDFIds.length} PDF(s) selected for context
             </div>
           )}
         </div>
         <button
           onClick={onSessionEnd}
-          className="flex items-center gap-1 px-3 py-1 text-xs bg-red-100 text-red-600 rounded hover:bg-red-200"
+          className="flex items-center gap-1 px-2 sm:px-3 py-1 text-xs bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-all duration-200 whitespace-nowrap"
         >
           <Power className="h-3 w-3" />
-          End Session
+          <span className="hidden sm:inline">End Session</span>
+          <span className="sm:hidden">End</span>
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[300px]">
+      <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 min-h-[300px]">
         {loadingHistory && (
           <div className="flex justify-center">
-            <div className="text-sm text-gray-500">Loading chat history...</div>
+            <div className="text-sm text-slate-500">Loading chat history...</div>
           </div>
         )}
         
@@ -287,26 +280,32 @@ function ChatInterface({
             }`}
           >
             {msg.type === 'assistant' && (
-              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center shadow-md">
                 <MessageCircle className="h-4 w-4 text-white" />
               </div>
             )}
             <div
-              className={`p-3 rounded-lg max-w-md ${
-                msg.type === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-900'
+              className={`p-2.5 sm:p-3 rounded-lg max-w-[85%] sm:max-w-md ${
+                msg.type === 'user' 
+                  ? 'bg-blue-600 text-white rounded-br-none shadow-md' 
+                  : 'bg-gray-100 text-slate-900 rounded-bl-none border border-blue-100'
               }`}
             >
-              <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+              <p className="text-xs sm:text-sm whitespace-pre-wrap break-words">{msg.content}</p>
               {msg.sources && msg.sources.length > 0 && (
                 <div className="mt-2 space-x-2">
                   {msg.sources.map((src, idx) => (
                     <span
                       key={idx}
-                      className="inline-block bg-white/20 text-xs px-2 py-1 rounded cursor-pointer hover:bg-white/30"
+                      className={`inline-block text-xs px-2 py-1 rounded cursor-pointer transition-all duration-200 ${
+                        msg.type === 'user'
+                          ? 'bg-white/20 hover:bg-white/30'
+                          : 'bg-blue-100 text-blue-800 hover:bg-blue-200'
+                      }`}
                       title={`Click to view PDF ${src.pdfId.slice(-4)} - Page ${src.pageNumber}`}
                       onClick={() => onSourceClick(src.pdfId, src.pageNumber)}
                     >
-                      PDF {src.pdfId.slice(-4)} - Page {src.pageNumber}
+                      📄 Page {src.pageNumber}
                     </span>
                   ))}
                 </div>
@@ -317,19 +316,19 @@ function ChatInterface({
         
         {loading && (
           <div className="flex items-start gap-3 justify-start">
-            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center shadow-md">
               <MessageCircle className="h-4 w-4 text-white" />
             </div>
-            <div className="p-3 rounded-lg bg-gray-100 text-gray-900">
+            <div className="p-3 rounded-lg bg-gray-100 text-slate-900 border border-blue-100">
               <p className="text-sm">Thinking...</p>
             </div>
           </div>
         )}
       </div>
 
-      <div className="p-3 border-t flex items-center gap-2">
+      <div className="p-3 sm:p-4 border-t border-blue-100 bg-gradient-to-r from-blue-50/50 to-purple-50/30 flex items-center gap-2">
         <input
-          className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 px-3 sm:px-4 py-2 text-sm sm:text-base border border-blue-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent bg-white text-slate-900 transition-all duration-200"
           placeholder="Ask a question..."
           value={input}
           onChange={e => setInput(e.target.value)}
@@ -339,15 +338,15 @@ function ChatInterface({
         <button
           onClick={handleSend}
           disabled={loading || !input.trim() || !session || selectedPDFIds.length === 0}
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-3 sm:px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md font-medium text-sm sm:text-base whitespace-nowrap"
         >
           {loading ? 'Loading...' : 'Send'}
         </button>
       </div>
       
       {selectedPDFIds.length === 0 && session && (
-        <div className="p-2 bg-orange-50 border-t border-orange-200 text-center">
-          <span className="text-xs text-orange-600">Select PDFs from the library to start chatting</span>
+        <div className="p-3 bg-amber-50 border-t border-amber-200 text-center">
+          <span className="text-xs text-amber-700 font-medium">📁 Select PDFs from the library to start chatting</span>
         </div>
       )}
     </div>
@@ -374,29 +373,29 @@ function TitleInputDialog({
   }
   if (!isOpen) return null
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-96">
-        <h2 className="text-lg font-semibold mb-4">Create New Session</h2>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 w-full max-w-sm sm:w-96 shadow-2xl">
+        <h2 className="text-base sm:text-lg font-semibold text-slate-900 mb-4">Create New Session</h2>
         <input
           type="text"
           placeholder="Enter session title..."
           value={title}
           onChange={e => setTitle(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-          className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+          className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-blue-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent mb-4 text-slate-900 transition-all duration-200"
           autoFocus
         />
         <div className="flex gap-2 justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800"
+            className="px-3 sm:px-4 py-2 text-sm sm:text-base text-slate-600 hover:text-slate-800 hover:bg-gray-100 rounded-lg transition-all duration-200"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={!title.trim()}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
+            className="px-3 sm:px-4 py-2 text-sm sm:text-base bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-all duration-200 font-medium"
           >
             Create
           </button>
@@ -416,60 +415,51 @@ export default function Dashboard() {
   const [showTitleDialog, setShowTitleDialog] = useState(false)
   const [activeTab, setActiveTab] = useState<'pdfs' | 'sessions' | 'chat'>('pdfs')
   const [scrollToPage, setScrollToPage] = useState<number | null>(null)
+  const [currentPageNumber, setCurrentPageNumber] = useState<number>(1)
   
-  // Translation states
   const [showTranslationModal, setShowTranslationModal] = useState(false)
   const [translatedText, setTranslatedText] = useState('')
   const [isTranslating, setIsTranslating] = useState(false)
   const [currentTranslationPage, setCurrentTranslationPage] = useState(1)
   
-  const backendUrl = 'https://multilingual-file.onrender.com'
-
+  const backendUrl = import.meta.env.VITE_BACKEND_URL
   const { toast } = useToast()
+  const { logout, user } = useAuth()
+  const navigate = useNavigate()
 
-  // Load selected PDFs from memory on component mount
   useEffect(() => {
     const globalWindow = window as unknown as { selectedPDFIds?: string[] }
     const saved = globalWindow.selectedPDFIds || []
     setSelectedPDFIds(saved)
   }, [])
 
-  // Save selected PDFs to memory whenever they change
   useEffect(() => {
     const globalWindow = window as unknown as { selectedPDFIds?: string[] }
     globalWindow.selectedPDFIds = selectedPDFIds
   }, [selectedPDFIds])
 
-  // Function to extract text from PDF using PDF.js (would need to be implemented with pdf-parse or similar)
-  const extractTextFromPDF = async (pdfUrl: string, pageNumber: number): Promise<string> => {
+  const extractTextFromPDF = async (pdfId: string, pageNumber: number): Promise<string> => {
     try {
-      // This is a simulation - in reality you'd need to implement PDF text extraction
-      // You could use libraries like pdf-parse, PDF.js, or send to your backend
-      
-      // For demonstration, we'll simulate extracting text
-      // In a real implementation, you'd want to:
-      // 1. Load the PDF using PDF.js or similar
-      // 2. Extract text from the specific page
-      // 3. Return the text content
-      
-      // Simulated delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Return placeholder text for demonstration
-      return `This is simulated text content from page ${pageNumber} of the PDF. In a real implementation, this would be the actual extracted text from the PDF page that needs to be translated.`
-      
+      // Get the PDF data we already have
+      const pdf = pdfs.find(p => p._id === pdfId)
+      if (!pdf) {
+        throw new Error('PDF not found')
+      }
+
+      // Find the page text
+      const pageData = pdf.text?.find(p => p.pageNumber === pageNumber)
+      if (!pageData || !pageData.content) {
+        throw new Error(`Page ${pageNumber} content not found`)
+      }
+
+      return pageData.content
     } catch (error) {
       console.error('Error extracting text from PDF:', error)
       throw new Error('Failed to extract text from PDF')
     }
   }
 
-  // Function to translate text using multiple free translation services
-  const translateText = async (text: string, targetLang: string = 'en'): Promise<string> => {
-    // Limit text length to avoid API limits
-    const maxLength = 1000
-    const truncatedText = text.length > maxLength ? text.substring(0, maxLength) + '...' : text
-      try {
+  const translateText = async (pdfId: string, pageNumber: number, text: string): Promise<string> => {
     const response = await fetch(`${backendUrl}/api/v1/translate`, {
       method: 'POST',
       credentials: 'include',
@@ -477,8 +467,9 @@ export default function Dashboard() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        text: truncatedText,
-        pageNumber: currentTranslationPage || 1
+        pdfId,
+        pageNumber,
+        text
       })
     })
     
@@ -489,124 +480,8 @@ export default function Dashboard() {
     } else {
       throw new Error(data.message || 'Backend translation failed')
     }
-  } catch (error) {
-    console.error('Backend Gemini translation error:', error)
-    // Continue to fallback services below
-  }
-  
-    // Service 1: MyMemory Translation API (most reliable, free)
-    try {
-      const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(truncatedText)}&langpair=auto|${targetLang}`)
-      const data = await response.json()
-      
-      if (data.responseStatus === 200 && data.responseData.translatedText) {
-        return data.responseData.translatedText
-      } else {
-        throw new Error('MyMemory API failed')
-      }
-    } catch (error) {
-      console.error('MyMemory translation error:', error)
-    }
-
-    // Service 2: Unofficial Google Translate API
-    try {
-      const googleResponse = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(truncatedText)}`)
-      const googleData = await googleResponse.json()
-      
-      if (googleData && googleData[0] && googleData[0][0] && googleData[0][0][0]) {
-        let translatedText = ''
-        googleData[0].forEach((item: unknown) => {
-          const tuple = item as unknown[]
-          if (tuple && tuple[0] && typeof tuple[0] === 'string') translatedText += tuple[0] as string
-        })
-        return translatedText
-      } else {
-        throw new Error('Google Translate API failed')
-      }
-    } catch (error) {
-      console.error('Google Translate error:', error)
-    }
-
-    // Service 3: Lingva Translate (Alternative Google Translate frontend)
-    try {
-      const lingvaResponse = await fetch(`https://lingva.ml/api/v1/auto/${targetLang}/${encodeURIComponent(truncatedText)}`)
-      const lingvaData = await lingvaResponse.json()
-      
-      if (lingvaData.translation) {
-        return lingvaData.translation
-      } else {
-        throw new Error('Lingva Translate failed')
-      }
-    } catch (error) {
-      console.error('Lingva Translate error:', error)
-    }
-
-    // Service 4: FunTranslations API (backup)
-    try {
-      const funResponse = await fetch(`https://api.funtranslations.com/translate/english.json`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `text=${encodeURIComponent(truncatedText)}`
-      })
-      const funData = await funResponse.json()
-      
-      if (funData.contents && funData.contents.translated) {
-        return funData.contents.translated
-      } else {
-        throw new Error('FunTranslations API failed')
-      }
-    } catch (error) {
-      console.error('FunTranslations error:', error)
-    }
-
-    // Service 5: Yandex Translate (unofficial endpoint)
-    try {
-      const yandexResponse = await fetch('https://translate.yandex.net/api/v1/tr.json/translate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `text=${encodeURIComponent(truncatedText)}&lang=${targetLang}`
-      })
-      const yandexData = await yandexResponse.json()
-      
-      if (yandexData.text && yandexData.text[0]) {
-        return yandexData.text[0]
-      } else {
-        throw new Error('Yandex Translate failed')
-      }
-    } catch (error) {
-      console.error('Yandex Translate error:', error)
-    }
-
-    // Final fallback: Simple text processing for common phrases
-    const commonTranslations: { [key: string]: string } = {
-      'hola': 'hello',
-      'bonjour': 'hello',
-      'guten tag': 'hello',
-      'ciao': 'hello',
-      'namaste': 'hello',
-      'gracias': 'thank you',
-      'merci': 'thank you',
-      'danke': 'thank you',
-      'grazie': 'thank you',
-      'arigato': 'thank you'
-    }
-
-    const lowerText = truncatedText.toLowerCase()
-    for (const [foreign, english] of Object.entries(commonTranslations)) {
-      if (lowerText.includes(foreign)) {
-        return truncatedText.replace(new RegExp(foreign, 'gi'), english)
-      }
-    }
-
-    // If all services fail, return original text with error message
-    throw new Error('All translation services are currently unavailable. Please try again later.')
   }
 
-  // Handle translation of current PDF page
   const handleTranslatePage = async () => {
     if (!selectedPDF) return
     
@@ -615,15 +490,15 @@ export default function Dashboard() {
     setTranslatedText('')
     
     try {
-      // Get current page number from iframe or default to 1
-      const currentPage = scrollToPage || 1
+      // Use currentPageNumber if available, otherwise use scrollToPage or default to 1
+      const currentPage = currentPageNumber || scrollToPage || 1
       setCurrentTranslationPage(currentPage)
       
-      // Extract text from PDF page
-      const extractedText = await extractTextFromPDF(selectedPDF.filePath, currentPage)
+      // Extract text from the PDF page
+      const extractedText = await extractTextFromPDF(selectedPDF._id, currentPage)
       
-      // Translate the extracted text
-      const translated = await translateText(extractedText, 'en')
+      // Translate using backend
+      const translated = await translateText(selectedPDF._id, currentPage, extractedText)
       
       setTranslatedText(translated)
       toast({ 
@@ -631,19 +506,19 @@ export default function Dashboard() {
         description: `Page ${currentPage} translated to English` 
       })
       
-  } catch (error: unknown) {
+    } catch (error: unknown) {
       console.error('Translation error:', error)
-    setTranslatedText(`Error: ${error instanceof Error ? error.message : 'Failed to translate page content'}`)
+      setTranslatedText(`Error: ${error instanceof Error ? error.message : 'Failed to translate page content'}`)
       toast({ 
         title: 'Translation failed', 
-      description: error instanceof Error ? error.message : 'Could not translate the page' 
+        description: error instanceof Error ? error.message : 'Could not translate the page',
+        variant: 'destructive'
       })
     } finally {
       setIsTranslating(false)
     }
   }
 
-  // Fetch PDFs
   const fetchPDFs = async () => {
     try {
       const res = await fetch(`${backendUrl}/api/v1/pdf/list`, { credentials: 'include' })
@@ -658,7 +533,6 @@ export default function Dashboard() {
     }
   }
 
-  // Fetch Sessions
   const fetchSessions = async () => {
     try {
       const res = await fetch(`${backendUrl}/api/v1/chat/sessions`, { credentials: 'include' })
@@ -791,6 +665,7 @@ export default function Dashboard() {
     if (pdf) {
       setSelectedPDF(pdf)
       setScrollToPage(pageNumber)
+      setCurrentPageNumber(pageNumber)
       setShowPDFViewer(true)
     }
   }
@@ -802,126 +677,164 @@ export default function Dashboard() {
     })
   }
 
+  const handleLogout = async () => {
+    await logout()
+    navigate('/')
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-900">PDF Chat Dashboard</h1>
-            {activeSession && (
-              <div className="flex items-center gap-2 text-sm">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-gray-600">Active: {activeSession.title}</span>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-purple-50/20">
+      <header className="bg-white/70 backdrop-blur-md border-b border-blue-100 shadow-md sticky top-0 z-40">
+        <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <img 
+                src="/logo.jpg" 
+                alt="LingoDocs Logo" 
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-cover shadow-md"
+              />
+              <div>
+                <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">LingoDocs</h1>
               </div>
-            )}
+            </div>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
+              {activeSession && (
+                <div className="flex items-center gap-2 text-xs sm:text-sm bg-green-50 px-2 sm:px-3 py-1 rounded-full border border-green-200 shadow-md">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-green-700 font-medium truncate">{activeSession.title}</span>
+                </div>
+              )}
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 bg-blue-50 rounded-lg border border-blue-200">
+                  <User className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+                  <span className="text-xs sm:text-sm font-medium text-blue-700 truncate max-w-[100px] sm:max-w-none">{user?.name || 'User'}</span>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 border border-red-200 transition-all duration-200 font-medium shadow-sm text-xs sm:text-sm"
+                >
+                  <LogOut className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">Logout</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-6 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Welcome back!</h1>
-          <p className="text-gray-600">Select PDFs first, then create or join a chat session.</p>
+      <main className="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
+        <div className="mb-6 sm:mb-8">
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Welcome back!</h2>
+          <p className="text-sm sm:text-base text-slate-600">Select PDFs first, then create or join a chat session to get started.</p>
           {selectedPDFIds.length > 0 && (
-            <div className="mt-2 p-3 bg-blue-50 rounded-lg border">
-              <div className="text-sm text-blue-700 font-medium">
-                Selected PDFs ({selectedPDFIds.length}):
+            <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200 shadow-md">
+              <div className="text-sm text-blue-900 font-semibold">
+                ✓ Selected PDFs ({selectedPDFIds.length})
               </div>
-              <div className="text-xs text-blue-600 mt-1">
-                {getSelectedPDFNames().join(', ')}
+              <div className="text-xs text-blue-700 mt-2 flex flex-wrap gap-2">
+                {getSelectedPDFNames().map((name, idx) => (
+                  <span key={idx} className="bg-blue-100 px-2 py-1 rounded-full">📄 {name}</span>
+                ))}
               </div>
             </div>
           )}
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-md border border-blue-100 p-4 sm:p-6 hover:shadow-lg transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total PDFs</p>
-                <p className="text-2xl font-bold">{pdfs.length}</p>
+                <p className="text-xs sm:text-sm text-slate-600 font-medium">Total PDFs</p>
+                <p className="text-2xl sm:text-3xl font-bold text-slate-900 mt-1">{pdfs.length}</p>
               </div>
-              <FileText className="h-8 w-8 text-blue-500"/>
+              <FileText className="h-8 w-8 sm:h-10 sm:w-10 text-blue-500 opacity-20"/>
             </div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-md border border-blue-100 p-4 sm:p-6 hover:shadow-lg transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Selected PDFs</p>
-                <p className="text-2xl font-bold text-blue-600">{selectedPDFIds.length}</p>
+                <p className="text-xs sm:text-sm text-slate-600 font-medium">Selected</p>
+                <p className="text-2xl sm:text-3xl font-bold text-blue-600 mt-1">{selectedPDFIds.length}</p>
               </div>
-              <CircleCheck className="h-8 w-8 text-blue-500"/>
+              <CircleCheck className="h-8 w-8 sm:h-10 sm:w-10 text-blue-500 opacity-20"/>
             </div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-md border border-blue-100 p-4 sm:p-6 hover:shadow-lg transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Chat Sessions</p>
-                <p className="text-2xl font-bold">{sessions.length}</p>
+                <p className="text-xs sm:text-sm text-slate-600 font-medium">Chat Sessions</p>
+                <p className="text-2xl sm:text-3xl font-bold text-green-600 mt-1">{sessions.length}</p>
               </div>
-              <MessageCircle className="h-8 w-8 text-green-500"/>
+              <MessageCircle className="h-8 w-8 sm:h-10 sm:w-10 text-green-500 opacity-20"/>
             </div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-md border border-blue-100 p-4 sm:p-6 hover:shadow-lg transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Languages</p>
-                <p className="text-2xl font-bold">{new Set(pdfs.map(p=>p.language)).size}</p>
+                <p className="text-xs sm:text-sm text-slate-600 font-medium">Languages</p>
+                <p className="text-2xl sm:text-3xl font-bold text-purple-600 mt-1">{new Set(pdfs.map(p=>p.language)).size}</p>
               </div>
-              <Languages className="h-8 w-8 text-purple-500"/>
+              <Languages className="h-8 w-8 sm:h-10 sm:w-10 text-purple-500 opacity-20"/>
             </div>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="space-y-6">
-          <div className="flex border-b">
+        <div className="space-y-4 sm:space-y-6">
+          <div className="flex overflow-x-auto border-b border-blue-100 scrollbar-hide -mx-4 sm:mx-0 px-4 sm:px-0">
             <button
               onClick={() => setActiveTab('pdfs')}
-              className={`px-4 py-2 font-medium border-b-2 ${
-                activeTab === 'pdfs' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+              className={`px-3 sm:px-4 py-2 sm:py-3 font-semibold border-b-2 transition-all duration-200 whitespace-nowrap text-sm sm:text-base ${
+                activeTab === 'pdfs' 
+                  ? 'border-blue-600 text-blue-600' 
+                  : 'border-transparent text-slate-600 hover:text-slate-900'
               }`}
             >
-              <FileText className="h-4 w-4 inline mr-2"/> PDFs ({selectedPDFIds.length} selected)
+              <FileText className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1 sm:mr-2"/> PDFs ({selectedPDFIds.length})
             </button>
             <button
               onClick={() => setActiveTab('sessions')}
-              className={`px-4 py-2 font-medium border-b-2 ${
-                activeTab === 'sessions' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+              className={`px-3 sm:px-4 py-2 sm:py-3 font-semibold border-b-2 transition-all duration-200 whitespace-nowrap text-sm sm:text-base ${
+                activeTab === 'sessions' 
+                  ? 'border-blue-600 text-blue-600' 
+                  : 'border-transparent text-slate-600 hover:text-slate-900'
               }`}
             >
-              <MessageCircle className="h-4 w-4 inline mr-2"/> Sessions
+              <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1 sm:mr-2"/> Sessions
             </button>
             {activeSession && (
               <button
                 onClick={() => setActiveTab('chat')}
-                className={`px-4 py-2 font-medium border-b-2 ${
-                  activeTab === 'chat' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+                className={`px-3 sm:px-4 py-2 sm:py-3 font-semibold border-b-2 transition-all duration-200 whitespace-nowrap text-sm sm:text-base ${
+                  activeTab === 'chat' 
+                    ? 'border-blue-600 text-blue-600' 
+                    : 'border-transparent text-slate-600 hover:text-slate-900'
                 }`}
               >
-                <MessageCircle className="h-4 w-4 inline mr-2"/> Active Chat
+                <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1 sm:mr-2"/> Active Chat
               </button>
             )}
             <button
               onClick={() => selectedPDFIds.length > 0 ? setShowTitleDialog(true) : toast({ title: 'No PDFs Selected', description: 'Please select PDFs first' })}
-              className={`px-4 py-2 font-medium border-b-2 border-transparent ${
-                selectedPDFIds.length > 0 ? 'text-green-600 hover:text-green-700' : 'text-gray-400'
+              className={`px-3 sm:px-4 py-2 sm:py-3 font-semibold border-b-2 transition-all duration-200 ml-auto whitespace-nowrap text-sm sm:text-base ${
+                selectedPDFIds.length > 0 
+                  ? 'border-transparent text-green-600 hover:text-green-700' 
+                  : 'border-transparent text-slate-400'
               }`}
             >
-              <Plus className="h-4 w-4 inline mr-2"/> New Chat
+              <Plus className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1 sm:mr-2"/> <span className="hidden sm:inline">New Chat</span><span className="sm:hidden">New</span>
             </button>
           </div>
 
           {/* PDFs Tab */}
           {activeTab === 'pdfs' && (
             <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold">Your PDF Library</h2>
-                <div className="flex items-center gap-4">
-                  <div className="relative">
-                    <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center gap-2">
-                      <Upload className="h-4 w-4"/> Upload PDF
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4 sm:mb-6">
+                <h2 className="text-lg sm:text-xl font-bold text-slate-900">Your PDF Library</h2>
+                <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
+                  <div className="relative flex-1 sm:flex-none">
+                    <button className="w-full sm:w-auto px-3 sm:px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 flex items-center justify-center gap-2 shadow-md font-medium transition-all duration-200 text-sm sm:text-base">
+                      <Upload className="h-4 w-4"/> <span className="hidden sm:inline">Upload PDF</span><span className="sm:hidden">Upload</span>
                     </button>
                     <input 
                       type="file" 
@@ -934,13 +847,13 @@ export default function Dashboard() {
               </div>
 
               {pdfs.length === 0 ? (
-                <div className="text-center py-12">
-                  <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4"/>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No PDFs Uploaded</h3>
-                  <p className="text-gray-600 mb-4">Upload your first PDF to get started with AI-powered document chat.</p>
+                <div className="text-center py-12 sm:py-16 bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl sm:rounded-2xl border border-blue-100 shadow-md px-4">
+                  <FileText className="h-12 w-12 sm:h-16 sm:w-16 text-blue-200 mx-auto mb-4"/>
+                  <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-2">No PDFs Uploaded Yet</h3>
+                  <p className="text-sm sm:text-base text-slate-600 mb-6">Upload your first PDF to start chatting with AI about your documents</p>
                   <div className="relative inline-block">
-                    <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center gap-2 mx-auto">
-                      <Upload className="h-4 w-4"/> Upload Your First PDF
+                    <button className="px-4 sm:px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 mx-auto shadow-md font-medium transition-all duration-200 text-sm sm:text-base">
+                      <Upload className="h-4 w-4"/> <span className="hidden sm:inline">Upload Your First PDF</span><span className="sm:hidden">Upload PDF</span>
                     </button>
                     <input 
                       type="file" 
@@ -951,12 +864,14 @@ export default function Dashboard() {
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {pdfs.map(pdf => (
                     <div 
                       key={pdf._id} 
-                      className={`bg-white rounded-lg border shadow-sm hover:shadow-md transition-all cursor-pointer ${
-                        selectedPDFIds.includes(pdf._id) ? 'ring-2 ring-blue-500 bg-blue-50' : ''
+                      className={`bg-white rounded-2xl border shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer ${
+                        selectedPDFIds.includes(pdf._id) 
+                          ? 'ring-2 ring-blue-600 border-blue-200 bg-gradient-to-br from-blue-50 to-purple-50' 
+                          : 'border-blue-100 hover:border-blue-300'
                       }`}
                       onClick={() => togglePDFSelection(pdf._id)}
                     >
@@ -964,30 +879,35 @@ export default function Dashboard() {
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex items-center gap-2">
                             {selectedPDFIds.includes(pdf._id) ? (
-                              <CircleCheck className="h-6 w-6 text-blue-500" />
+                              <CircleCheck className="h-6 w-6 text-blue-600" />
                             ) : (
-                              <Circle className="h-6 w-6 text-gray-300" />
+                              <Circle className="h-6 w-6 text-slate-300" />
                             )}
-                            <FileText className="h-8 w-8 text-blue-500"/>
+                            <FileText className="h-8 w-8 text-blue-600"/>
                           </div>
-                          <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">{pdf.language}</span>
+                          <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-semibold">{pdf.language}</span>
                         </div>
-                        <h3 className="text-lg font-medium truncate mb-1">{pdf.fileName}</h3>
-                        <p className="text-gray-600 text-sm mb-1">{pdf.totalPages} pages</p>
-                        <div className="flex items-center text-sm text-gray-500 mb-4">
-                          <Calendar className="h-4 w-4 mr-2"/>
+                        <h3 className="text-base font-semibold text-slate-900 truncate mb-1">{pdf.fileName}</h3>
+                        <p className="text-slate-700 text-sm mb-1">📄 {pdf.totalPages} pages</p>
+                        <div className="flex items-center text-xs text-slate-500 mb-4">
+                          <Calendar className="h-4 w-4 mr-1"/>
                           {new Date(pdf.createdAt).toLocaleDateString()}
                         </div>
                         <div className="flex gap-2" onClick={e => e.stopPropagation()}>
                           <button 
-                            onClick={() => { setSelectedPDF(pdf); setScrollToPage(null); setShowPDFViewer(true) }} 
-                            className="flex-1 px-3 py-2 border rounded-lg text-sm hover:bg-gray-50 flex items-center justify-center gap-2"
+                            onClick={() => { 
+                              setSelectedPDF(pdf); 
+                              setScrollToPage(null); 
+                              setCurrentPageNumber(1);
+                              setShowPDFViewer(true) 
+                            }} 
+                            className="flex-1 px-3 py-2 border border-blue-300 rounded-lg text-sm hover:bg-blue-50 flex items-center justify-center gap-1 transition-all duration-200 text-blue-700 font-medium"
                           >
                             <Eye className="h-4 w-4"/> Preview
                           </button>
                           <button 
                             onClick={() => handleDeletePDF(pdf._id)} 
-                            className="px-3 py-2 border rounded-lg text-sm text-red-600 hover:bg-red-50"
+                            className="px-3 py-2 border border-red-200 rounded-lg text-sm text-red-600 hover:bg-red-50 transition-all duration-200"
                           >
                             <Trash2 className="h-4 w-4"/>
                           </button>
@@ -1003,77 +923,79 @@ export default function Dashboard() {
           {/* Sessions Tab */}
           {activeTab === 'sessions' && (
             <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold">Chat Sessions</h2>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4 sm:mb-6">
+                <h2 className="text-lg sm:text-xl font-bold text-slate-900">Chat Sessions</h2>
                 <button 
                   onClick={() => selectedPDFIds.length > 0 ? setShowTitleDialog(true) : toast({ title: 'No PDFs Selected', description: 'Please select PDFs first' })}
-                  className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
+                  className={`w-full sm:w-auto px-3 sm:px-4 py-2 rounded-lg flex items-center justify-center gap-2 font-medium shadow-md transition-all duration-200 text-sm sm:text-base ${
                     selectedPDFIds.length > 0 
-                      ? 'bg-blue-500 text-white hover:bg-blue-600' 
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800' 
+                      : 'bg-slate-300 text-slate-500 cursor-not-allowed'
                   }`}
                   disabled={selectedPDFIds.length === 0}
                 >
-                  <Plus className="h-4 w-4"/> New Session
+                  <Plus className="h-4 w-4"/> <span className="hidden sm:inline">New Session</span><span className="sm:hidden">New Session</span>
                 </button>
               </div>
 
               {sessions.length === 0 ? (
-                <div className="text-center py-12">
-                  <MessageCircle className="h-16 w-16 text-gray-300 mx-auto mb-4"/>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Chat Sessions</h3>
-                  <p className="text-gray-600 mb-4">Create your first session to start chatting with your PDFs.</p>
+                <div className="text-center py-12 sm:py-16 bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl sm:rounded-2xl border border-blue-100 shadow-md px-4">
+                  <MessageCircle className="h-12 w-12 sm:h-16 sm:w-16 text-green-200 mx-auto mb-4"/>
+                  <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-2">No Chat Sessions Yet</h3>
+                  <p className="text-sm sm:text-base text-slate-600 mb-6">Create your first session to start having conversations with your PDFs</p>
                   <button 
                     onClick={() => selectedPDFIds.length > 0 ? setShowTitleDialog(true) : setActiveTab('pdfs')}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center gap-2 mx-auto"
+                    className="px-4 sm:px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 mx-auto shadow-md font-medium transition-all duration-200 text-sm sm:text-base"
                   >
                     {selectedPDFIds.length > 0 ? (
                       <>
-                        <Plus className="h-4 w-4"/> Create Session
+                        <Plus className="h-4 w-4"/> <span className="hidden sm:inline">Create Session</span><span className="sm:hidden">Create</span>
                       </>
                     ) : (
                       <>
-                        <FileText className="h-4 w-4"/> Select PDFs First
+                        <FileText className="h-4 w-4"/> <span className="hidden sm:inline">Select PDFs First</span><span className="sm:hidden">Select PDFs</span>
                       </>
                     )}
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {sessions.map(session => (
                     <div 
                       key={session._id} 
-                      className={`bg-white rounded-lg border shadow-sm hover:shadow-md transition-shadow ${
-                        activeSession?.sessionId === session.sessionId ? 'ring-2 ring-green-500' : ''
+                      className={`bg-white rounded-2xl border shadow-md hover:shadow-lg transition-all duration-300 ${
+                        activeSession?.sessionId === session.sessionId 
+                          ? 'ring-2 ring-green-500 border-green-200 bg-gradient-to-br from-green-50 to-emerald-50' 
+                          : 'border-blue-100 hover:border-blue-300'
                       }`}
                     >
                       <div className="p-4">
                         <div className="flex items-start justify-between mb-3">
-                          <MessageCircle className="h-8 w-8 text-green-500"/>
+                          <MessageCircle className="h-8 w-8 text-green-600"/>
                           <div className="flex items-center gap-2">
                             {activeSession?.sessionId === session.sessionId && (
-                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                              <div className="flex items-center gap-1 bg-green-100 px-2 py-1 rounded-full">
+                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                <span className="text-xs text-green-700 font-semibold">Active</span>
+                              </div>
                             )}
-                            <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
-                              {activeSession?.sessionId === session.sessionId ? 'Active' : 'Session'}
-                            </span>
                           </div>
                         </div>
-                        <h3 className="text-lg font-medium mb-3">{session.title}</h3>
-                        <div className="flex items-center text-sm text-gray-500 mb-4">
-                          <Calendar className="h-4 w-4 mr-2"/>
+                        <h3 className="text-base font-semibold text-slate-900 mb-3">{session.title}</h3>
+                        <div className="flex items-center text-xs text-slate-500 mb-4">
+                          <Calendar className="h-4 w-4 mr-1"/>
                           {new Date(session.createdAt).toLocaleDateString()}
                         </div>
                         <div className="flex gap-2">
                           <button 
                             onClick={() => openSession(session)} 
-                            className="flex-1 px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center justify-center gap-2"
+                            className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-1 transition-all duration-200 font-medium"
                           >
-                            <Eye className="h-4 w-4"/> Open Chat
+                            <Eye className="h-4 w-4"/> Open
                           </button>
                           <button 
                             onClick={() => handleDeleteSession(session.sessionId)} 
-                            className="px-3 py-2 border rounded-lg text-sm text-red-600 hover:bg-red-50"
+                            className="px-3 py-2 border border-red-200 rounded-lg text-sm text-red-600 hover:bg-red-50 transition-all duration-200"
                           >
                             <Trash2 className="h-4 w-4"/>
                           </button>
@@ -1090,33 +1012,32 @@ export default function Dashboard() {
           {activeTab === 'chat' && (
             <div>
               {!activeSession ? (
-                <div className="bg-white rounded-lg border shadow-sm p-8 text-center">
-                  <MessageCircle className="h-16 w-16 text-gray-400 mx-auto mb-4"/>
-                  <h2 className="text-xl font-semibold mb-2">No Active Session</h2>
-                  <p className="text-gray-600 mb-4">
+                <div className="bg-white rounded-xl sm:rounded-2xl border border-blue-100 shadow-md p-6 sm:p-12 text-center">
+                  <MessageCircle className="h-12 w-12 sm:h-16 sm:w-16 text-blue-200 mx-auto mb-4"/>
+                  <h2 className="text-lg sm:text-xl font-semibold text-slate-900 mb-2">No Active Session</h2>
+                  <p className="text-sm sm:text-base text-slate-600 mb-6">
                     {selectedPDFIds.length === 0 
-                      ? 'Select PDFs from the library first, then create a new session to start chatting.'
-                      : 'Create a new session or open an existing one from the Sessions tab to start chatting.'
-                    }
+                      ? 'Select PDFs from the library first, then create a session to start chatting.'
+                      : 'Create a new session or open an existing one from the Sessions tab.'}
                   </p>
                   {selectedPDFIds.length > 0 ? (
                     <button 
                       onClick={() => setShowTitleDialog(true)} 
-                      className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center gap-2 mx-auto"
+                      className="px-4 sm:px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 mx-auto shadow-md font-medium transition-all duration-200 text-sm sm:text-base"
                     >
-                      <Plus className="h-4 w-4"/> Create New Session
+                      <Plus className="h-4 w-4"/> <span className="hidden sm:inline">Create New Session</span><span className="sm:hidden">Create Session</span>
                     </button>
                   ) : (
                     <button 
                       onClick={() => setActiveTab('pdfs')} 
-                      className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center gap-2 mx-auto"
+                      className="px-4 sm:px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 mx-auto shadow-md font-medium transition-all duration-200 text-sm sm:text-base"
                     >
                       <FileText className="h-4 w-4"/> Select PDFs
                     </button>
                   )}
                 </div>
               ) : (
-                <div className="bg-white rounded-lg border shadow-sm h-[600px]">
+                <div className="bg-white rounded-xl sm:rounded-2xl border border-blue-100 shadow-md h-[500px] sm:h-[600px] overflow-hidden">
                   <ChatInterface 
                     session={activeSession} 
                     selectedPDFIds={selectedPDFIds}
@@ -1136,42 +1057,44 @@ export default function Dashboard() {
         onSubmit={handleNewSessionWithTitle}
       />
 
-      {/* PDF Viewer Modal with Enhanced Features and Translation */}
+      {/* PDF Viewer Modal */}
       {showPDFViewer && selectedPDF && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg w-4/5 h-4/5 max-w-6xl flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b">
-              <div>
-                <h2 className="text-lg font-semibold">PDF Viewer: {selectedPDF.fileName}</h2>
-                {scrollToPage && (
-                  <p className="text-sm text-blue-600">Scrolling to page {scrollToPage}</p>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-0 sm:p-4">
+          <div className="bg-white rounded-none sm:rounded-2xl w-full h-full sm:w-4/5 sm:h-4/5 max-w-6xl flex flex-col shadow-2xl">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 sm:p-4 border-b border-blue-100 bg-gradient-to-r from-blue-50 to-purple-50 gap-3 sm:gap-0">
+              <div className="flex-1 min-w-0">
+                <h2 className="text-base sm:text-lg font-semibold text-slate-900 truncate">PDF Viewer: {selectedPDF.fileName}</h2>
+                {(currentPageNumber || scrollToPage) && (
+                  <p className="text-xs sm:text-sm text-blue-700 font-medium">
+                    Viewing page {currentPageNumber || scrollToPage} of {selectedPDF.totalPages}
+                  </p>
                 )}
-                <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                  <span>{selectedPDF.totalPages} pages</span>
-                  <span>•</span>
-                  <span>{selectedPDF.language}</span>
-                  <span>•</span>
-                  <span>Uploaded: {new Date(selectedPDF.createdAt).toLocaleDateString()}</span>
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-2 text-xs text-slate-600">
+                  <span className="font-medium">📄 {selectedPDF.totalPages} pages</span>
+                  <span className="hidden sm:inline">•</span>
+                  <span className="font-medium">{selectedPDF.language}</span>
+                  <span className="hidden sm:inline">•</span>
+                  <span>📅 {new Date(selectedPDF.createdAt).toLocaleDateString()}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap w-full sm:w-auto">
                 {selectedPDFIds.includes(selectedPDF._id) && (
-                  <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                    Selected
+                  <span className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full font-semibold">
+                    ✓ Selected
                   </span>
                 )}
-                {/* Translation Button */}
                 <button 
                   onClick={handleTranslatePage}
                   disabled={isTranslating}
-                  className="px-3 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                  className="px-2 sm:px-3 py-1.5 sm:py-2 text-xs bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 transition-all duration-200 font-medium shadow-md flex-1 sm:flex-none"
                 >
-                  <Languages className="h-3 w-3" />
-                  {isTranslating ? 'Translating...' : 'Translate to English'}
+                  <Languages className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">{isTranslating ? 'Translating...' : 'Translate'}</span>
+                  <span className="sm:hidden">{isTranslating ? '...' : 'Translate'}</span>
                 </button>
                 <button 
                   onClick={() => togglePDFSelection(selectedPDF._id)}
-                  className={`px-3 py-1 text-xs rounded ${
+                  className={`px-2 sm:px-3 py-1.5 sm:py-2 text-xs rounded-lg transition-all duration-200 font-medium flex-1 sm:flex-none ${
                     selectedPDFIds.includes(selectedPDF._id)
                       ? 'bg-red-100 text-red-700 hover:bg-red-200'
                       : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
@@ -1184,7 +1107,7 @@ export default function Dashboard() {
                     setShowPDFViewer(false); 
                     setScrollToPage(null); 
                   }} 
-                  className="text-gray-500 hover:text-gray-700 p-1 rounded hover:bg-gray-100"
+                  className="text-slate-400 hover:text-slate-600 p-2 rounded hover:bg-gray-100 transition-all duration-200"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -1198,29 +1121,50 @@ export default function Dashboard() {
                 } 
                 className="w-full h-full border-0" 
                 title="PDF Viewer"
-                onLoad={() => {
-                  if (scrollToPage) {
-                    console.log(`PDF loaded, should scroll to page ${scrollToPage}`)
+                onLoad={(e) => {
+                  // Extract page number from iframe URL if available
+                  const iframe = e.target as HTMLIFrameElement
+                  try {
+                    const url = new URL(iframe.src)
+                    const pageParam = url.hash.match(/page=(\d+)/)
+                    if (pageParam) {
+                      const pageNum = parseInt(pageParam[1], 10)
+                      setCurrentPageNumber(pageNum)
+                      setScrollToPage(pageNum)
+                    } else {
+                      setCurrentPageNumber(1)
+                    }
+                  } catch (err) {
+                    // If URL parsing fails, try to get from hash directly
+                    const hashMatch = iframe.src.match(/#page=(\d+)/)
+                    if (hashMatch) {
+                      const pageNum = parseInt(hashMatch[1], 10)
+                      setCurrentPageNumber(pageNum)
+                      setScrollToPage(pageNum)
+                    } else {
+                      setCurrentPageNumber(1)
+                    }
                   }
                 }}
               />
             </div>
-            <div className="p-3 border-t bg-gray-50">
-              <div className="flex justify-between items-center text-sm text-gray-600">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  <span>{selectedPDF.fileName}</span>
+            <div className="p-2 sm:p-3 border-t border-blue-100 bg-gradient-to-r from-blue-50/50 to-purple-50/30">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0 text-xs text-slate-600">
+                <div className="flex items-center gap-2 font-medium truncate flex-1 min-w-0">
+                  <FileText className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                  <span className="truncate">{selectedPDF.fileName}</span>
                 </div>
-                <div className="flex items-center gap-4">
-                  {scrollToPage && (
-                    <div className="flex items-center gap-2 text-blue-600">
-                      <Eye className="h-4 w-4" />
-                      <span>Viewing page {scrollToPage}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2 text-green-600">
-                    <Languages className="h-4 w-4" />
-                    <span>Translation available</span>
+                <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
+                {(currentPageNumber || scrollToPage) && (
+                  <div className="flex items-center gap-1 text-blue-700 font-medium">
+                    <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
+                    Page {currentPageNumber || scrollToPage}
+                  </div>
+                )}
+                  <div className="flex items-center gap-1 text-green-700 font-medium">
+                    <Languages className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">Translation ready</span>
+                    <span className="sm:hidden">Ready</span>
                   </div>
                 </div>
               </div>
@@ -1239,29 +1183,24 @@ export default function Dashboard() {
         fileName={selectedPDF?.fileName || ''}
       />
 
-      {/* Footer */}
-      <footer className="bg-white border-t mt-12">
-        <div className="container mx-auto px-6 py-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="mb-4 md:mb-0">
-              <h3 className="text-lg font-semibold text-gray-900">PDF Chat Dashboard</h3>
-              <p className="text-gray-600 text-sm">AI-powered document conversations with translation</p>
+      <footer className="bg-white border-t border-blue-100 mt-8 sm:mt-16 shadow-md">
+        <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
+          <div className="flex flex-col sm:flex-row justify-between items-center text-center sm:text-left gap-4 sm:gap-0">
+            <div className="mb-0 sm:mb-0">
+              <div className="flex items-center justify-center sm:justify-start gap-2 mb-2">
+                <img 
+                  src="/logo.jpg" 
+                  alt="LingoDocs Logo" 
+                  className="w-8 h-8 rounded-lg object-cover shadow-md"
+                />
+                <div>
+                  <h3 className="text-base sm:text-lg font-bold text-slate-900">LingoDocs</h3>
+                  <p className="text-xs text-slate-600 font-medium">Break Every Language Barrier</p>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-6 text-sm text-gray-600">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span>System Online</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Languages className="h-4 w-4" />
-                <span>Translation Ready</span>
-              </div>
-              <div>
-                Version 2.1
-              </div>
-              <div>
-                {new Date().getFullYear()} © All rights reserved
-              </div>
+            <div className="text-xs sm:text-sm text-slate-600">
+              Made By Parth
             </div>
           </div>
         </div>
@@ -1270,7 +1209,6 @@ export default function Dashboard() {
   )
 }
 
-// Declare global types for TypeScript
 declare global {
   interface Window {
     selectedPDFIds: string[]

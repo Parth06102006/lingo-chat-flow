@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/components/auth/AuthContext'
 import { useToast } from '@/hooks/use-toast'
 import { motion } from 'framer-motion'
-import { FileText, ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 
 const Signup = () => {
   const [username, setUsername] = useState('')
@@ -79,8 +79,12 @@ const Signup = () => {
 
         <Card className="notebook-panel shadow-elegant">
           <CardHeader className="text-center">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <FileText className="h-8 w-8 text-primary" />
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-2 mb-4">
+              <img 
+                src="/logo.jpg" 
+                alt="LingoDocs Logo" 
+                className="w-12 h-12 sm:w-8 sm:h-8 rounded-lg object-cover shadow-md"
+              />
               <span className="text-2xl font-bold">LingoDocs</span>
             </div>
             <CardTitle className="text-2xl">Create your account</CardTitle>

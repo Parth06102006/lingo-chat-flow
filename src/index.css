@@ -1,6 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+* {
+  font-family: "Quicksand", sans-serif;
+}
 
 /* LingoDocs Design System - Professional multilingual AI assistant theme */
 
@@ -174,5 +177,18 @@
   /* Chat message styling */
   .chat-message {
     @apply animate-in fade-in slide-in-from-bottom-2 duration-300;
+  }
+}
+
+@layer utilities {
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
   }
 }

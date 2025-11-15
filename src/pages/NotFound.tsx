@@ -14,7 +14,14 @@ const NotFound = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center space-y-6 max-w-md mx-auto px-6">
-        <h1 className="text-6xl font-bold text-primary">404</h1>
+        <div className="flex flex-col items-center justify-center gap-4 mb-4">
+          <img 
+            src="/logo.jpg" 
+            alt="LingoDocs Logo" 
+            className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover shadow-lg"
+          />
+          <h1 className="text-6xl font-bold text-primary">404</h1>
+        </div>
         <div className="space-y-2">
           <h2 className="text-2xl font-semibold">Page not found</h2>
           <p className="text-muted-foreground">
