@@ -65,10 +65,7 @@ You need to have Node.js (v18+) and npm (or yarn) installed on your system.
 3. **Environment Setup:**
    Create a `.env` file in the root directory and add the following environment variables:
    ```env
-   VITE_SUPABASE_URL=your_supabase_project_url
-   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
    VITE_BACKEND_URL=http://localhost:5000
-   VITE_GOOGLE_GENAI_API_KEY=your_google_genai_api_key
    ```
 
 4. **Start the development server:**
@@ -121,41 +118,15 @@ The frontend communicates with a companion backend API (see [multilingual-file](
 ### State Management & Data
 - **TanStack Query** - Powerful data fetching and caching
 - **React Router** - Client-side routing
-- **Supabase** - Backend-as-a-Service for authentication
 - **Axios** - HTTP client for API communication
 
 ### Document Processing
 - **React PDF** - PDF rendering and viewer component
-- **Google Generative AI** - AI-powered chat and analysis
-- **Google Translate API** - Real-time translation services
 
 ### Development Tools
 - **ESLint** - Code linting and formatting
 - **PostCSS** - CSS processing and optimization
 - **Autoprefixer** - CSS vendor prefixing
-
-## 🤝 Contributing
-
-Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-
-### Development Process
-
-1. **Fork** the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. **Commit** your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a **Pull Request**
-
-### Code Standards
-
-- Follow TypeScript best practices
-- Use ESLint configuration for code quality
-- Maintain component organization in the `src/components` directory
-- Add proper TypeScript types for all data structures
-
-## 📜 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 👤 Author
 
@@ -163,10 +134,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **GitHub:** [@Parth06102006](https://github.com/Parth06102006)
 - **Project Link:** [https://github.com/Parth06102006/lingo-chat-flow](https://github.com/Parth06102006/lingo-chat-flow)
+- **Backend Link:** [https://github.com/Parth06102006/Multilingual-file](https://github.com/Parth06102006/Multilingual-file)
 
-## 🙏 Acknowledgments
-
-- **Google AI** for providing powerful language models
 - **Supabase** for reliable backend infrastructure
 - **Vercel** for seamless deployment platform
 - **Open Source Community** for amazing tools and libraries
