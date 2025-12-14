@@ -135,11 +135,6 @@ The frontend communicates with a companion backend API (see [multilingual-file](
 - **GitHub:** [@Parth06102006](https://github.com/Parth06102006)
 - **Project Link:** [https://github.com/Parth06102006/lingo-chat-flow](https://github.com/Parth06102006/lingo-chat-flow)
 - **Backend Link:** [https://github.com/Parth06102006/Multilingual-file](https://github.com/Parth06102006/Multilingual-file)
-
-- **Supabase** for reliable backend infrastructure
-- **Vercel** for seamless deployment platform
-- **Open Source Community** for amazing tools and libraries
-
 ---
 
 **Break Every Language Barrier with LingoDocs! 🌍📄**
